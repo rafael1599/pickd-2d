@@ -1,0 +1,108 @@
+﻿=== Audit SKU Dimensions for Rows 1, 2, 3, 4 ===
+
+--- ROW 1 (42 SKUs) ---
+  06-4473TL: L=55.25 W=9 H=28.25 (qty: 66)
+  06-4432BK: L=54.5 W=8.5 H=27.5 (qty: 50)
+  06-4507BK: L=51 W=8.5 H=25.25 (qty: 24)
+  03-4515GY: L=58.25 W=8.75 H=33.25 (qty: 20)
+  03-4545MN: L=54.5 W=8 H=30 (qty: 10)
+  03-3382BK: L=56.25 W=9 H=31 (qty: 7)
+  03-4468BR: L=58 W=8.75 H=30.75 (qty: 4)
+  07-3642VL: L=5 W=6 H=null (qty: 3) <-- SUSPECT
+  06-4297RD: L=50.75 W=8.5 H=25 (qty: 3)
+  03-4230BL: L=58 W=8.75 H=31 (qty: 3)
+  03-4456BL: L=58.5 W=8.75 H=30.75 (qty: 2)
+  03-4457GN: L=54.75 W=8.75 H=30 (qty: 2)
+  03-4207BR: L=58 W=8.75 H=31 (qty: 2)
+  03-4458GN: L=56 W=8.75 H=30 (qty: 2)
+  03-4462GN: L=58.5 W=8.5 H=31 (qty: 2)
+  03-4448BK: L=57.25 W=9 H=30.25 (qty: 2)
+  07-3639GR: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  06-4614GN: L=54.5 W=8.75 H=27.75 (qty: 1)
+  03-3828GY: L=8 W=31 H=57 (qty: 1)
+  03-4227BL: L=55.25 W=8.5 H=30 (qty: 1)
+  03-4450BK: L=58.5 W=8.5 H=31 (qty: 1)
+  03-3885BK: L=54.5 W=8.25 H=29 (qty: 1)
+  03-4209GY: L=55.75 W=8.75 H=30 (qty: 1)
+  03-3966BL: L=57.5 W=8.75 H=29.5 (qty: 1)
+  03-3861BK: L=56.5 W=9 H=32 (qty: 1)
+  06-4615GN: L=54.25 W=8.5 H=28.25 (qty: 1)
+  03-3895BL: L=54.75 W=8.5 H=30 (qty: 1)
+  03-3882BK: L=54.75 W=8.25 H=30 (qty: 1)
+  03-3373CL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3313GY: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3781BL: L=52.5 W=7.75 H=30 (qty: 1)
+  06-4293MG: L=44.5 W=8.25 H=22 (qty: 1)
+  07-3529BL: L=30 W=8 H=17 (qty: 1)
+  03-3161GY: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  06-4294MVC: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  06-4296RD: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  06-4627LDV: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3300BL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-1293BK: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3995PD: L=55.5 W=8.5 H=29.5 (qty: 1)
+  07-3641RD: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3970BL: L=5 W=6 H=null (qty: 0) <-- SUSPECT
+
+--- ROW 2 (29 SKUs) ---
+  06-4573GY: L=55 W=8.75 H=28.5 (qty: 40)
+  06-4617RD: L=55 W=9 H=27.5 (qty: 32)
+  03-3934MN: L=53.5 W=9 H=29.5 (qty: 32)
+  03-3738BK: L=57.5 W=9 H=29.75 (qty: 26)
+  06-4430RB: L=55 W=8.75 H=28.75 (qty: 21)
+  06-4587RD: L=5 W=6 H=null (qty: 18) <-- SUSPECT
+  06-4616RD: L=5 W=6 H=null (qty: 11) <-- SUSPECT
+  03-4258BL: L=5 W=6 H=null (qty: 8) <-- SUSPECT
+  03-4460GN: L=57 W=9 H=30 (qty: 7)
+  06-4445WH: L=5 W=6 H=null (qty: 6) <-- SUSPECT
+  UNDO-RECENT-MISSING: L=10 W=10 H=null (qty: 5) <-- SUSPECT
+  06-4457RD: L=5 W=6 H=null (qty: 3) <-- SUSPECT
+  03-3827BL: L=5 W=6 H=null (qty: 3) <-- SUSPECT
+  06-4447BL: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  03-4231BL: L=58.5 W=9 H=30.75 (qty: 2)
+  03-3892RD: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  03-4449BK: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  06-4448WH: L=54.5 W=8.75 H=27.75 (qty: 1)
+  03-3492BL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3027CL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-4076SG: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-4059PD: L=54.25 W=8.75 H=29 (qty: 1)
+  03-3807GN: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-3954GY: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-4088SL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-4454BL: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  06-4524KW: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  06-4611GN: L=5 W=6 H=null (qty: 1) <-- SUSPECT
+  03-4032BL: L=5 W=6 H=null (qty: 0) <-- SUSPECT
+
+--- ROW 3 (16 SKUs) ---
+  03-3927BK: L=54.5 W=8.75 H=32.75 (qty: 43)
+  03-3999PD: L=55 W=8.75 H=30 (qty: 32)
+  03-4512GY: L=56.5 W=8.75 H=31.75 (qty: 27)
+  03-4272BK: L=56.5 W=8 H=31.25 (qty: 23)
+  03-3997PD: L=55.25 W=8.5 H=29.5 (qty: 20)
+  03-3803BL: L=5 W=6 H=null (qty: 17) <-- SUSPECT
+  06-4457BK: L=5 W=6 H=null (qty: 14) <-- SUSPECT
+  03-4044BK: L=5 W=6 H=null (qty: 13) <-- SUSPECT
+  03-3854GY: L=5 W=6 H=null (qty: 12) <-- SUSPECT
+  03-4211GY: L=5 W=6 H=null (qty: 7) <-- SUSPECT
+  06-4585RD: L=5 W=6 H=null (qty: 6) <-- SUSPECT
+  UNDO-OLD-EXISTS: L=10 W=10 H=null (qty: 5) <-- SUSPECT
+  03-3847BL: L=5 W=6 H=null (qty: 4) <-- SUSPECT
+  03-4536BL: L=5 W=6 H=null (qty: 4) <-- SUSPECT
+  03-4046MN: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  03-3977GY: L=5 W=6 H=null (qty: 0) <-- SUSPECT
+
+--- ROW 4 (11 SKUs) ---
+  06-4606OR: L=54.5 W=8.75 H=30.25 (qty: 52)
+  06-4562BL: L=5 W=6 H=null (qty: 51) <-- SUSPECT
+  06-4572GY: L=55 W=9 H=27.75 (qty: 48)
+  03-3905BL: L=5 W=6 H=null (qty: 22) <-- SUSPECT
+  03-3906GY: L=5 W=6 H=null (qty: 17) <-- SUSPECT
+  03-4257BL: L=5 W=6 H=null (qty: 4) <-- SUSPECT
+  03-3789BL: L=5 W=6 H=null (qty: 4) <-- SUSPECT
+  03-4455BL: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  03-3810GN: L=5 W=6 H=null (qty: 2) <-- SUSPECT
+  07-3674GY: L=5 W=6 H=6 (qty: 1)
+  03-4894BL: L=5 W=6 H=null (qty: 0) <-- SUSPECT
+
