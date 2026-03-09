@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { getSkuColor, getSkuBorderColor } from "../rendering/colorPalette";
+import { collapseFor2D } from "../engine/placementOptimizer";
 import "../styles/warehouse.css";
 
 export default function WarehouseD3Visualizer({
@@ -49,6 +50,9 @@ export default function WarehouseD3Visualizer({
     useEffect(() => {
         if (!placements || !svgRef.current) return;
 
+        // Collapse to top-floor-only — lower floors are fully occluded in 2D
+        const visiblePlacements = collapseFor2D(placements);
+
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
 
@@ -90,11 +94,14 @@ export default function WarehouseD3Visualizer({
             .attr("stroke-width", 1)
             .attr("stroke-dasharray", "4 4");
 
-        // --- Sort placements by floor for correct layering ---
-        const sorted = [...placements].sort((a, b) => a.floor - b.floor);
+        // --- visiblePlacements already contains only top-floor boxes ---
+        // No need to sort by floor or compute topFloors — all are top-level
+        const sorted = visiblePlacements;
 
         // --- Draw boxes ---
         sorted.forEach((p) => {
+            const isTopLevel = true;
+
             // Engine coordinate mapping:
             // engine Y (depth along aisle) → screen X
             // engine X (width across aisle) → screen Y
@@ -109,7 +116,8 @@ export default function WarehouseD3Visualizer({
                 .attr("class", `placement-group`)
                 .attr("data-group", p.groupId)
                 .attr("data-sku", p.sku)
-                .style("cursor", "pointer");
+                .style("cursor", isTopLevel ? "pointer" : "default")
+                .style("pointer-events", isTopLevel ? "all" : "none");
 
             // Box shadow (subtle depth effect)
             if (p.floor > 1) {

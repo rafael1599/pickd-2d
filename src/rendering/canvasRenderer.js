@@ -1,5 +1,6 @@
 import { getSkuColor, getSkuBorderColor } from './colorPalette';
 import { INCHES_PER_FOOT } from '../engine/dimensions';
+import { collapseFor2D } from '../engine/placementOptimizer';
 
 /**
  * Main rendering orchestrator for a single warehouse Row.
@@ -28,17 +29,16 @@ export function drawRow(ctx, rowData, placements, groups, scale, hoveredGroupId)
     // 3. Draw Grid Lines (1 foot squares)
     drawGrid(ctx, renderWidthPx, renderHeightPx, scale);
 
-    // 4. Draw Boxes (Placements)
-    // Sort by Z index (floor) so taller floors render on top
-    const sortedPlacements = [...placements].sort((a, b) => a.z - b.z);
+    // 4. Draw Boxes — only top-floor per stack (lower floors are fully occluded in 2D)
+    const visiblePlacements = collapseFor2D(placements);
 
-    sortedPlacements.forEach(p => {
+    visiblePlacements.forEach(p => {
         drawBox(ctx, p, scale);
     });
 
     // 5. Draw Halo on Top (Separate pass so it's never covered)
     if (hoveredGroupId) {
-        sortedPlacements.forEach(p => {
+        visiblePlacements.forEach(p => {
             if (p.groupId === hoveredGroupId) {
                 drawHalo(ctx, p, scale);
             }
@@ -47,7 +47,7 @@ export function drawRow(ctx, rowData, placements, groups, scale, hoveredGroupId)
 
     // 6. Draw Labels
     if (groups && scale >= 1.5) {
-        drawLabels(ctx, placements, groups, scale);
+        drawLabels(ctx, visiblePlacements, groups, scale);
     }
 }
 
