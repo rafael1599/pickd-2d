@@ -26,7 +26,7 @@ dist-ssr
 # Project-specific ignores
 .env
 .gemini/
-.agents/
+# .agents/ — tracked for skill portability across machines
 .agent/
 _agents/
 _agent/
