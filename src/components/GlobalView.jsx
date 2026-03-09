@@ -15,7 +15,8 @@ export function GlobalView({
     consolidationResult,
     isConsolidating,
     isUpdating,
-    fetchData
+    fetchData,
+    onGo3D
 }) {
     return (
         <div className="p-10 animate-in fade-in zoom-in-95 duration-500 max-w-7xl mx-auto">
@@ -53,6 +54,15 @@ export function GlobalView({
                     </div>
 
                     <div className="flex gap-4">
+                        <button
+                            onClick={onGo3D}
+                            className="p-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-lg flex items-center gap-2 transition-all group"
+                            title="Ver en 3D"
+                        >
+                            <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:animate-pulse"></div>
+                            <span className="text-xs font-bold uppercase tracking-wider">3D View</span>
+                        </button>
+
                         <button
                             onClick={handleRunConsolidationPlan}
                             disabled={isConsolidating || isUpdating}

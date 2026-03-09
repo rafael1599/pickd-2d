@@ -13,6 +13,7 @@ import { GlobalView } from './components/GlobalView'
 import { BayDetailView } from './components/BayDetailView'
 import { RowDetailView } from './components/RowDetailView'
 import { ConsolidationModal } from './components/ConsolidationModal'
+import { Warehouse3DVisualizer } from './components/Warehouse3DVisualizer'
 
 export function WarehouseVisualizer() {
     const [view, setView] = useState('global')
@@ -61,7 +62,8 @@ export function WarehouseVisualizer() {
         if (metaData) {
             const map = {};
             metaData.forEach(m => {
-                map[m.sku] = { L: m.length_in, W: m.width_in, H: m.height_in, note: m.sku_note };
+                const skuKey = (m.sku || "").trim();
+                map[skuKey] = { L: m.length_in, W: m.width_in, H: m.height_in, note: m.sku_note };
             });
             setSkuMap(map);
         }
@@ -248,6 +250,7 @@ export function WarehouseVisualizer() {
     const goToGlobal = () => { setView('global'); setSelectedBay(null); setSelectedRow(null); hideTooltip(); }
     const goToBay = (bay) => { setView('bay'); setSelectedBay(bay); setSelectedRow(null); hideTooltip(); }
     const goToRow = (row) => { setView('row'); setSelectedRow(row); hideTooltip(); }
+    const goTo3D = () => { setView('3d'); hideTooltip(); }
 
     const getRowPlan = useCallback((rowId) => {
         const rowData = getRowData(rowId);
@@ -327,6 +330,16 @@ export function WarehouseVisualizer() {
                     isConsolidating={isConsolidating}
                     isUpdating={isUpdating}
                     fetchData={fetchData}
+                    onGo3D={goTo3D}
+                />
+            )}
+
+            {view === '3d' && (
+                <Warehouse3DVisualizer
+                    inventory={activeInventory}
+                    locationsMap={locationsMap}
+                    skuMap={skuMap}
+                    onGoBack={goToGlobal}
                 />
             )}
 

@@ -1,16 +1,28 @@
 import React from 'react';
 import { getSkuColor } from '../rendering/colorPalette';
+import { DEFAULT_BOX } from '../engine/dimensions';
 
 export function SkuDetailPanel({ sku, inventory, skuMap, onClose, onUpdateQuantity, isUpdating }) {
     if (!sku) return null;
 
-    const skuInfo = skuMap[sku] || { L: '?', W: '?', H: '?' };
+    // Use name normalization/trimming for better mapping
+    const cleanSku = sku.trim();
+    const skuInfo = skuMap[cleanSku] || skuMap[sku] || {
+        L: DEFAULT_BOX.L,
+        W: DEFAULT_BOX.W,
+        H: DEFAULT_BOX.H,
+        isDefault: true
+    };
+
+    // Safety check for individual null values
+    const dims = {
+        L: skuInfo.L || DEFAULT_BOX.L,
+        W: skuInfo.W || DEFAULT_BOX.W,
+        H: skuInfo.H || DEFAULT_BOX.H
+    };
+
     const quantity = inventory.find(i => i.sku === sku)?.qty || 0;
     const rawLocation = inventory.find(i => i.sku === sku)?.rawLocation || '';
-
-    // Calculate total units in entire warehouse for this SKU
-    // (This would ideally be passed from parent but let's see if we can derive from inventory object if it contains all)
-    // For now, let's keep it focused on the current row's detail as requested.
 
     return (
         <div className="flex-1 max-w-sm h-full bg-[#0a0a0c] border border-white/5 rounded-3xl p-8 flex flex-col overflow-hidden animate-in slide-in-from-right duration-500 shadow-2xl">
@@ -43,11 +55,16 @@ export function SkuDetailPanel({ sku, inventory, skuMap, onClose, onUpdateQuanti
 
                 {/* Dimensional Specs */}
                 <div className="space-y-4">
-                    <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest pl-1">Engine Specifications</span>
+                    <div className="flex justify-between items-center pr-1">
+                        <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest pl-1">Engine Specifications</span>
+                        {skuInfo.isDefault && (
+                            <span className="text-[8px] bg-red-500/10 text-red-500 font-black px-2 py-1 rounded-md uppercase tracking-widest">Missing Specs</span>
+                        )}
+                    </div>
                     <div className="grid grid-cols-3 gap-3">
-                        <SpecBlock label="Length" value={`${skuInfo.L}"`} />
-                        <SpecBlock label="Width" value={`${skuInfo.W}"`} />
-                        <SpecBlock label="Height" value={`${skuInfo.H}"`} />
+                        <SpecBlock label="Length" value={`${dims.L}"`} />
+                        <SpecBlock label="Width" value={`${dims.W}"`} />
+                        <SpecBlock label="Height" value={`${dims.H}"`} />
                     </div>
                 </div>
 
