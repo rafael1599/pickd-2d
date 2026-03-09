@@ -58,33 +58,38 @@ export function solveAutoLayout(rowData, skuMap, inventory) {
     let remainingTotalQty = pending.reduce((sum, item) => sum + item.qty, 0);
     let currentSkuIndex = 0;
 
-    function takeUnits(qtyNeeded) {
-        let taken = 0;
-        let mainSku = null;
-        while (taken < qtyNeeded && currentSkuIndex < pending.length) {
-            let p = pending[currentSkuIndex];
-            if (p.qty <= 0) { currentSkuIndex++; continue; }
-            if (!mainSku) mainSku = p.sku;
-            let toTake = Math.min(p.qty, qtyNeeded - taken);
-            p.qty -= toTake;
-            taken += toTake;
-            remainingTotalQty -= toTake;
-            if (p.qty <= 0) currentSkuIndex++;
+    // Take units from a SINGLE SKU only — never mix SKUs in a group
+    function takeUnitsFromOneSku(maxQty) {
+        while (currentSkuIndex < pending.length && pending[currentSkuIndex].qty <= 0) {
+            currentSkuIndex++;
         }
-        return { taken, sku: mainSku || 'UNKNOWN' };
+        if (currentSkuIndex >= pending.length) return { taken: 0, sku: 'UNKNOWN' };
+
+        const p = pending[currentSkuIndex];
+        const toTake = Math.min(p.qty, maxQty);
+        p.qty -= toTake;
+        remainingTotalQty -= toTake;
+        if (p.qty <= 0) currentSkuIndex++;
+        return { taken: toTake, sku: p.sku };
     }
 
     let rowCursorY = 0;
     let isFirstPlacement = true;
 
     while (remainingTotalQty > 0) {
-        let requireTower = (isFirstPlacement || remainingTotalQty >= 6);
-        
+        // Peek at current SKU's remaining qty to decide tower vs line
+        while (currentSkuIndex < pending.length && pending[currentSkuIndex].qty <= 0) {
+            currentSkuIndex++;
+        }
+        if (currentSkuIndex >= pending.length) break;
+
+        const currentSkuQty = pending[currentSkuIndex].qty;
+        let requireTower = (isFirstPlacement || currentSkuQty >= 6);
+
         if (requireTower) {
-            let toTake = Math.min(30, remainingTotalQty);
-            if (remainingTotalQty - toTake > 0 && remainingTotalQty - toTake < 6) toTake = remainingTotalQty - 6;
-            
-            let { taken, sku } = takeUnits(toTake);
+            let toTake = Math.min(6 * MAX_FLOORS, currentSkuQty);
+
+            let { taken, sku } = takeUnitsFromOneSku(toTake);
             let dims = getSkuDims(sku);
             
             const towerSide = Math.max(dims.L, dims.W * 6);
@@ -141,8 +146,8 @@ export function solveAutoLayout(rowData, skuMap, inventory) {
             rowCursorY += towerSide; 
             isFirstPlacement = false;
         } else {
-            let toTake = Math.min(5, remainingTotalQty);
-            let { taken, sku } = takeUnits(toTake);
+            let toTake = Math.min(MAX_FLOORS, currentSkuQty);
+            let { taken, sku } = takeUnitsFromOneSku(toTake);
             let dims = getSkuDims(sku);
             
             let groupId = `L${lCount++}`;

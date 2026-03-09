@@ -10,7 +10,7 @@ export const INCHES_PER_FOOT = 12;
 export const BOX_MARGIN = 0.5;
 
 // Maximum number of boxes that can be stacked vertically
-export const MAX_FLOORS = 5;
+export const MAX_FLOORS = 999;
 
 // Default dimensions matching Row 1 realistic averages
 export const DEFAULT_BOX = {
