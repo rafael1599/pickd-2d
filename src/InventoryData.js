@@ -1,4 +1,14 @@
 export const WAREHOUSE_STRUCTURE = {
+    // Physical ceiling clearance — drives MAX_FLOORS in dimensions.js
+    maxHeightFt: 16,
+    // Main aisle runs along the dock end of all bays. Forklift-rated: 12ft.
+    // Cross aisles between bays: 8ft (electric pallet jack only).
+    mainAisleWidthFt: 12,
+    crossAisleWidthFt: 8,
+    // Bay order front-to-back from dock doors: Bay 2 (primary) → Bay 3 (secondary) → Bay 1 (bulk/overflow).
+    // Row orientation: all rows in Bay 2 and Bay 3 open toward the main aisle (dock side).
+    // Bay 1 rows 41-44 open toward the cross aisle between Bay 3 and Bay 1.
+    // Row 51 is a detached staging zone near the dock — verify physical position before relying on this.
     bays: [
         { id: "bay-1", name: "Bay 1 (Bulk & Overflow)", rows: [41, 42, 43, 44, 51] },
         { id: "bay-2", name: "Bay 2 (Primary Logistics)", rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, "19B"] },
@@ -6,48 +16,96 @@ export const WAREHOUSE_STRUCTURE = {
     ]
 };
 
+/**
+ * Velocity-based zone assignments per row.
+ * HOT  (A-class): High pick frequency, closest to dock. Replenish first.
+ * WARM (B-class): Moderate frequency. Secondary pick zone or bulk replenishment source.
+ * COLD (C-class): Low frequency, furthest travel distance.
+ * BULK: Block storage or pallet-only zone — not pick-ready from the floor.
+ * STAGING: Receiving/staging area near dock — not counted as storage capacity.
+ */
+export const ZONE_MAP = {
+    // Bay 2 — Primary Logistics (closest to dock)
+    1:   'HOT',  2:  'HOT',  3:  'HOT',
+    4:   'HOT',  5:  'HOT',  6:  'HOT',
+    7:   'HOT',  8:  'HOT',  9:  'HOT',
+    10:  'HOT',  11: 'HOT',  12: 'HOT',
+    13:  'WARM', 14: 'WARM', 15: 'WARM',
+    16:  'WARM', 17: 'WARM', 18: 'WARM',
+    19:  'WARM', '19B': 'WARM',
+    // Bay 3 — Secondary Storage (mid-distance)
+    20:  'COLD', '20B': 'COLD',
+    21:  'COLD', 22: 'COLD', 23: 'COLD', 24: 'COLD', 25: 'COLD',
+    26:  'COLD', 27: 'COLD', 28: 'COLD', 29: 'COLD', 30: 'COLD',
+    31:  'COLD', 32: 'COLD', 33: 'COLD', 34: 'COLD',
+    // Bay 1 — Bulk & Overflow (back of warehouse or separate wing)
+    41:  'WARM', // Bulk rack, replenishment source for Bay 2
+    42:  'WARM',
+    43:  'BULK', // Block storage — forklift pallet moves only, not hand-pick
+    44:  'WARM',
+    51:  'STAGING', // Suspected dock staging zone — verify physical position
+};
+
+/**
+ * orientation: which end of the row faces the main picking aisle.
+ *   'front' = pick face is at the aisle end (standard — picker walks in from aisle)
+ *   'back'  = pick face is at the back wall end (unusual, means picker must enter fully)
+ * All Bay 2 and Bay 3 rows open toward the main aisle (dock side) → 'front'.
+ * Bay 1 rows open toward the cross aisle separating Bay 1 from Bay 3 → 'front'.
+ * Row 51 orientation is unknown pending physical verification.
+ */
 export const WAREHOUSE_ROWS = [
-    { row: 1, length: 52, widthFt: 8 },
-    { row: 2, length: 52, widthFt: 8 },
-    { row: 3, length: 52, widthFt: 8 },
-    { row: 4, length: 45, widthFt: 8 },
-    { row: 5, length: 45, widthFt: 8 },
-    { row: 6, length: 45, widthFt: 8 },
-    { row: 7, length: 52, widthFt: 8 },
-    { row: 8, length: 52, widthFt: 8 },
-    { row: 9, length: 52, widthFt: 8 },
-    { row: 10, length: 52, widthFt: 8 },
-    { row: 11, length: 52, widthFt: 8 },
-    { row: 12, length: 52, widthFt: 8 },
-    { row: 13, length: 45, widthFt: 8 },
-    { row: 14, length: 45, widthFt: 8 },
-    { row: 15, length: 45, widthFt: 8 },
-    { row: 16, length: 52, widthFt: 8 },
-    { row: 17, length: 52, widthFt: 8 },
-    { row: 18, length: 52, widthFt: 8 },
-    { row: 19, length: 52, widthFt: 8 },
-    { row: "19B", length: 52, widthFt: 8 },
-    { row: 20, length: 52, widthFt: 8 },
-    { row: "20B", length: 52, widthFt: 8 },
-    { row: 21, length: 52, widthFt: 8 },
-    { row: 22, length: 52, widthFt: 8 },
-    { row: 23, length: 52, widthFt: 8 },
-    { row: 24, length: 52, widthFt: 8 },
-    { row: 25, length: 52, widthFt: 8 },
-    { row: 26, length: 52, widthFt: 8 },
-    { row: 27, length: 52, widthFt: 8 },
-    { row: 28, length: 52, widthFt: 8 },
-    { row: 29, length: 52, widthFt: 8 },
-    { row: 30, length: 52, widthFt: 8 },
-    { row: 31, length: 52, widthFt: 8 },
-    { row: 32, length: 52, widthFt: 8 },
-    { row: 33, length: 52, widthFt: 8 },
-    { row: 34, length: 52, widthFt: 8 },
-    { row: 41, length: 60, widthFt: 8 },
-    { row: 42, length: 60, widthFt: 8 },
-    { row: 43, length: 65, widthFt: 20, type: 'block' },
-    { row: 44, length: 60, widthFt: 8 },
-    { row: 51, length: 60, widthFt: 8 }
+    // Bay 2 — Primary Logistics
+    { row: 1, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 2, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 3, length: 52, widthFt: 8, orientation: 'front' },
+    // Rows 4-6 are 45ft (7ft shorter than standard).
+    // Physical obstruction at the back wall end — likely structural columns or HVAC.
+    { row: 4, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 5, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 6, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 7, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 8, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 9, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 10, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 11, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 12, length: 52, widthFt: 8, orientation: 'front' },
+    // Rows 13-15 are 45ft (7ft shorter than standard).
+    // Physical obstruction at the back wall end — likely structural columns or HVAC.
+    { row: 13, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 14, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 15, length: 45, widthFt: 8, orientation: 'front' },
+    { row: 16, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 17, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 18, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 19, length: 52, widthFt: 8, orientation: 'front' },
+    { row: "19B", length: 52, widthFt: 8, orientation: 'front' },
+    // Bay 3 — Secondary Storage
+    { row: 20, length: 52, widthFt: 8, orientation: 'front' },
+    { row: "20B", length: 52, widthFt: 8, orientation: 'front' },
+    { row: 21, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 22, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 23, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 24, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 25, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 26, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 27, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 28, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 29, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 30, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 31, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 32, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 33, length: 52, widthFt: 8, orientation: 'front' },
+    { row: 34, length: 52, widthFt: 8, orientation: 'front' },
+    // Bay 1 — Bulk & Overflow (rows open toward cross aisle between Bay 1 and Bay 3)
+    { row: 41, length: 60, widthFt: 8, orientation: 'front' },
+    { row: 42, length: 60, widthFt: 8, orientation: 'front' },
+    // Row 43: open-floor block storage (no rack system). Forklift pallet moves only.
+    // Stacking engine must use block-grid algorithm, not tower/line patterns.
+    { row: 43, length: 65, widthFt: 20, type: 'block', orientation: 'front' },
+    { row: 44, length: 60, widthFt: 8, orientation: 'front' },
+    // Row 51: suspected dock staging zone. Physical position vs rows 41-44 unverified.
+    { row: 51, length: 60, widthFt: 8, orientation: 'front' }
 ];
 
 export const INITIAL_INVENTORY = {

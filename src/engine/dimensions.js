@@ -9,8 +9,14 @@ export const INCHES_PER_FOOT = 12;
 // Note: This margin applies to the 4 horizontal sides (L and W), NOT vertically.
 export const BOX_MARGIN = 0.5;
 
-// Maximum number of boxes that can be stacked vertically
-export const MAX_FLOORS = 999;
+// Warehouse clear height (floor to ceiling obstruction) in feet.
+// Standard distribution center: 16ft usable with electric pallet jack reach.
+// Adjust if the actual facility has a different clearance.
+export const WAREHOUSE_CLEAR_HEIGHT_FT = 16;
+
+// Maximum number of boxes that can be stacked vertically, derived from clear height.
+// Uses DEFAULT_BOX.H — recalculate if SKU heights vary significantly from default.
+export const MAX_FLOORS = Math.floor((WAREHOUSE_CLEAR_HEIGHT_FT * 12) / 30); // 6 floors at 30" per box
 
 // Default dimensions matching Row 1 realistic averages
 export const DEFAULT_BOX = {

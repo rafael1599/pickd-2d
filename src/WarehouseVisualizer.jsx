@@ -4,12 +4,13 @@ import { solveAutoLayout } from './engine/stackingEngine'
 import { DEFAULT_BOX } from './engine/dimensions'
 import { getSkuColor } from './rendering/colorPalette'
 import { supabase } from './supabaseClient'
+import { warehouseStore } from './store/state'
 import { generateConsolidationPlan } from './engine/consolidationLogic'
 import { generatePDFReport } from './engine/consolidationReport'
 
 // New Sub-components
 import { Tooltip } from './components/Common'
-import { GlobalView } from './components/GlobalView'
+import { WarehouseFloorPlan } from './components/WarehouseFloorPlan'
 import { BayDetailView } from './components/BayDetailView'
 import { RowDetailView } from './components/RowDetailView'
 import { ConsolidationModal } from './components/ConsolidationModal'
@@ -26,22 +27,31 @@ export function WarehouseVisualizer() {
     const [locationsMap, setLocationsMap] = useState({})
 
     const [skuMap, setSkuMap] = useState({})
+    const [rowActivityMap, setRowActivityMap] = useState({})
     const [isUpdating, setIsUpdating] = useState(false)
     const [consolidationResult, setConsolidationResult] = useState(null)
     const [isConsolidating, setIsConsolidating] = useState(false)
     const [isSimulatedView, setIsSimulatedView] = useState(false)
 
     const fetchData = useCallback(async () => {
-        // Fetch Inventory
-        const { data: invData, error: invError } = await supabase.from('inventory').select('sku, location, quantity');
+        // Fetch Inventory — only active rows with stock
+        const { data: invData, error: invError } = await supabase
+            .from('inventory')
+            .select('sku, location, quantity, is_active, updated_at, item_name, warehouse')
+            .eq('warehouse', 'LUDLOW')
+            .eq('is_active', true)
+            .gt('quantity', 0);
         if (invError) console.error("Error fetching inventory:", invError);
 
         // Fetch SKU Metadata
         const { data: metaData, error: metaError } = await supabase.from('sku_metadata').select('sku, length_in, width_in, height_in, sku_note');
         if (metaError) console.error("Error fetching metadata:", metaError);
 
-        // Fetch Locations (Dimensions)
-        const { data: locData, error: locError } = await supabase.from('locations').select('location, length_ft, length_in, width_ft, width_in');
+        // Fetch Locations (Dimensions + operational fields)
+        const { data: locData, error: locError } = await supabase
+            .from('locations')
+            .select('location, length_ft, length_in, width_ft, width_in, zone, max_capacity, picking_order, is_active, notes')
+            .eq('warehouse', 'LUDLOW');
         if (locError) console.error("Error fetching locations:", locError);
 
         if (locData) {
@@ -53,7 +63,12 @@ export function WarehouseVisualizer() {
                     length: l.length_ft || 0,
                     lengthIn: l.length_in || 0,
                     widthFt: l.width_ft || 0,
-                    widthIn: l.width_in || 0
+                    widthIn: l.width_in || 0,
+                    zone: l.zone || 'UNASSIGNED',
+                    maxCapacity: l.max_capacity || 550,
+                    pickingOrder: l.picking_order ?? null,
+                    isActive: l.is_active ?? true,
+                    notes: l.notes || null,
                 };
             });
             setLocationsMap(map);
@@ -88,12 +103,37 @@ export function WarehouseVisualizer() {
                 grouped[rowId].push({
                     sku: item.sku,
                     qty: item.quantity,
-                    rawLocation: rawLocation // Store original for DB updates
+                    rawLocation: rawLocation, // Store original for DB updates
+                    warehouse: item.warehouse,
+                    updatedAt: item.updated_at,
+                    itemName: item.item_name || null,
                 });
             });
             setInventory(grouped);
         } else {
             setInventory({});
+        }
+
+        // Fetch location activity metrics from inventory_logs via SECURITY DEFINER RPC
+        // (direct table query blocked by RLS for anon key)
+        const { data: activityData, error: activityError } = await supabase
+            .rpc('get_location_activity', { p_warehouse: 'LUDLOW', p_days_short: 7, p_days_long: 30 });
+        if (activityError) {
+            console.error("Error fetching location activity:", activityError);
+        } else if (activityData) {
+            const actMap = {};
+            activityData.forEach(row => {
+                // Normalize location string to rowId key, same as inventory normalization
+                let loc = (row.location || "").trim();
+                if (loc.toUpperCase().startsWith("ROW ")) loc = loc.substring(4).trim();
+                if (loc !== "" && !isNaN(loc)) loc = parseInt(loc, 10);
+                actMap[loc] = {
+                    lastTouchedAt: row.last_touched_at,
+                    movementCount7d: Number(row.movement_count_short),
+                    movementCount30d: Number(row.movement_count_long),
+                };
+            });
+            setRowActivityMap(actMap);
         }
     }, []);
 
@@ -130,6 +170,21 @@ export function WarehouseVisualizer() {
         fetchData();
     }, [fetchData]);
 
+    // Sync operational location metadata into Valtio store for 3D and other consumers
+    useEffect(() => {
+        const meta = {};
+        Object.entries(locationsMap).forEach(([rowId, data]) => {
+            meta[rowId] = {
+                zone: data.zone,
+                maxCapacity: data.maxCapacity,
+                pickingOrder: data.pickingOrder,
+                isActive: data.isActive,
+                notes: data.notes,
+            };
+        });
+        warehouseStore.locationMeta = meta;
+    }, [locationsMap]);
+
     const handleUpdateQuantity = async (sku, rawLocation, newQty) => {
         setIsUpdating(true);
         const { error } = await supabase
@@ -157,29 +212,28 @@ export function WarehouseVisualizer() {
         if (!consolidationResult) return;
         setIsUpdating(true);
 
-        // Generate PDF Report before finishing
+        // Generate PDF Report before executing moves
         generatePDFReport(consolidationResult);
 
-        // We need to decrease from Source and Increase in Target
+        const errors = [];
         for (const move of consolidationResult.plan) {
-            // 1. Decrease from source
-            const sourceRowId = `ROW ${move.from}`;
-            const targetRowId = `ROW ${move.to}`;
+            const fromLocation = `ROW ${move.from}`;
+            const toLocation = `ROW ${move.to}`;
 
-            // Get current source qty
-            const { data: sourceData } = await supabase.from('inventory').select('quantity').match({ sku: move.sku, location: sourceRowId }).single();
-            const { data: targetData } = await supabase.from('inventory').select('quantity').match({ sku: move.sku, location: targetRowId }).maybeSingle();
+            const { error } = await supabase.rpc('move_inventory_stock', {
+                p_sku: move.sku,
+                p_from_warehouse: 'LUDLOW',
+                p_from_location: fromLocation,
+                p_to_warehouse: 'LUDLOW',
+                p_to_location: toLocation,
+                p_qty: move.qty,
+                p_performed_by: 'pickd-2d Consolidation',
+                p_user_id: null,
+            });
 
-            if (sourceData) {
-                const newSourceQty = Math.max(0, sourceData.quantity - move.qty);
-                await supabase.from('inventory').update({ quantity: newSourceQty }).match({ sku: move.sku, location: sourceRowId });
-
-                if (targetData) {
-                    const newTargetQty = targetData.quantity + move.qty;
-                    await supabase.from('inventory').update({ quantity: newTargetQty }).match({ sku: move.sku, location: targetRowId });
-                } else {
-                    await supabase.from('inventory').insert([{ sku: move.sku, location: targetRowId, quantity: move.qty }]);
-                }
+            if (error) {
+                console.error(`Consolidation move failed (${move.sku} ${fromLocation} → ${toLocation}):`, error);
+                errors.push(`${move.sku}: ${error.message}`);
             }
         }
 
@@ -187,7 +241,12 @@ export function WarehouseVisualizer() {
         setConsolidationResult(null);
         setIsSimulatedView(false);
         setIsUpdating(false);
-        alert("Consolidation complete! Bay 3 elements moved to Bay 1 & 2. PDF Report Generated.");
+
+        if (errors.length > 0) {
+            alert(`Consolidation completed with ${errors.length} error(s):\n${errors.join('\n')}`);
+        } else {
+            alert("Consolidation complete! Bay 3 elements moved to Bay 1 & 2. PDF Report Generated.");
+        }
     };
 
     const showTooltip = useCallback((e, title, desc, extra = '') => {
@@ -240,7 +299,9 @@ export function WarehouseVisualizer() {
                 length: dbData.length || hardcoded?.length || 0,
                 lengthIn: dbData.lengthIn || 0,
                 widthFt: dbData.widthFt || hardcoded?.widthFt || 8,
-                widthIn: dbData.widthIn || 0
+                widthIn: dbData.widthIn || 0,
+                zone: dbData.zone || null,
+                maxCapacity: dbData.maxCapacity || null,
             };
         }
         return hardcoded;
@@ -316,11 +377,14 @@ export function WarehouseVisualizer() {
             <Tooltip tooltip={tooltip} />
 
             {view === 'global' && (
-                <GlobalView
+                <WarehouseFloorPlan
                     onBaySelect={goToBay}
+                    onRowSelect={goToRow}
                     getRowInventory={getRowInventory}
                     getRowData={getRowData}
                     skuMap={skuMap}
+                    locationsMap={locationsMap}
+                    rowActivityMap={rowActivityMap}
                     showTooltip={showTooltip}
                     hideTooltip={hideTooltip}
                     isSimulatedView={isSimulatedView}
