@@ -35,3 +35,7 @@ fix-*.js
 verify-data.js
 check-db.js
 debug-tables.js
+
+# Claude (skills symlink + local config)
+.claude/skills
+.claude/skills/
