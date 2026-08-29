@@ -36,6 +36,4 @@ verify-data.js
 check-db.js
 debug-tables.js
 
-# Claude (skills symlink + local config)
-.claude/skills
-.claude/skills/
+# .claude/skills se versiona: son skills de proyecto (proyecto retirado, sin globales enlazadas)

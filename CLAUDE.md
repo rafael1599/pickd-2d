@@ -134,7 +134,10 @@ Create a team with 5 teammates for pickd-2d warehouse visualization app:
 
 ## Skills
 
-Symlinked desde `~/Documents/Projects/skills/project-skills/pickd-2d/`.
+Versionadas en `.claude/skills/` desde el 29 ago 2026 (antes eran symlinks a `project-skills/pickd-2d/`
+del repo central `rafael1599/skills`, carpeta que se retiró ese día). **Proyecto retirado:** pickd es dueño
+único de la DB de Supabase desde el 14 ago 2026 y el contrato `JAMIS/SHARED-DB-CONTRACT.md` se eliminó
+(ver `pickd/CLAUDE.md`); este repo queda como referencia.
 
 ### Skills disponibles
 - `supabase` -- operaciones DB (adaptado para shared DB pickd/pickd-2d)
